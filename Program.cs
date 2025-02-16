@@ -10,10 +10,8 @@ namespace InhancedShoppingSystem
         static void Main(string[] args)
         {
             ShopItems items = new ShopItems();
-            User user = new User();
-            Employee employee = new Employee();
-            user.Items=items.Items;
-            employee.Items=items.Items;
+            User user = new User(items);
+            Employee employee = new Employee(items);
 
             // employee
             int EmployeeId;
@@ -77,7 +75,7 @@ namespace InhancedShoppingSystem
                                     case 3:
                                         Console.Write("Enter the item you want to remove form your cart: ");
                                         ItemChoosen = Console.ReadLine().ToLower();
-                                        if (user.MyCart.Contains(ItemChoosen))
+                                        if (user.MyCart.ContainsKey(ItemChoosen))
                                         {
                                             user.LastItem = ItemChoosen;
                                             user.RemoveFromCart(ItemChoosen);

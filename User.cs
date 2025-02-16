@@ -4,50 +4,99 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace InhancedShoppingSystem
 {
-    internal class User:ShopItems
+    internal class User
     {
+        private ShopItems _shop;
+        public User(ShopItems shop) 
+        {   
+            _shop = shop;
+        }
         //public Dictionary<stringListdouble>=new Dictionary<string,double>();
-        public List<string> MyCart=new List<string>();
+        public Dictionary<string,double> MyCart=new Dictionary<string,double>();
+        private Dictionary<string, int> ItemCounter =new Dictionary<string, int>(); 
         public string LastItem { get; set; }
         public string UserName { get; set; }
         public int UserPhone { get; set; }
         public string UserAddress { get; set; }
         public void AddToCart(string Name)
         {
-            MyCart.Add(Name);
+            if (MyCart.ContainsKey(Name))
+            {
+                ItemCounter[Name]++;
+                MyCart[Name] += _shop.Items[Name];
+            }
+            else
+            {
+                MyCart.Add(Name, _shop.Items[Name]);
+                ItemCounter.Add(Name, 1);
+            }
         }
         public void ViewCart()
         {
+            Console.WriteLine("product  quantity   Price\n");
             foreach (var item in MyCart)
             {
-                if (Items.ContainsKey(item))
-                {
-                    Console.WriteLine($"{item} : {Items[item]}$");
-                }
+                Console.WriteLine($"{item.Key}     X {ItemCounter[item.Key]}  :  {item.Value}$");
             }
         }
         public void RemoveFromCart(string Name)
         {
-            MyCart.Remove(Name);
-        }
-        public void UndoLastAction(int Choice)
-        {
-            if (Choice == 1)
+            if (ItemCounter[Name] > 1)
             {
-                MyCart.Remove(LastItem);
-                Console.WriteLine("done!");
-            }
-            else if (Choice == 3)
-            {
-                MyCart.Add(LastItem);
-                Console.WriteLine("done!");
+                ItemCounter[Name]--;
+                MyCart[Name] -= _shop.Items[Name];
             }
             else
             {
-                Console.WriteLine("Cann't undo this action");
+            MyCart.Remove(Name);
+            ItemCounter.Remove(Name);
+            }
+        }
+        public void UndoLastAction(int Choice)
+        {
+            switch (Choice)
+            {
+                case 1:
+                    if (ItemCounter[LastItem] > 1)
+                    {
+                        ItemCounter[LastItem]--;
+                        MyCart[LastItem] -= _shop.Items[LastItem];
+                    }
+                    else
+                    {
+                        MyCart.Remove(LastItem);
+                        ItemCounter.Remove(LastItem);
+                    }
+                    Console.WriteLine("done!");
+                    break;
+                case 3:
+                    if (ItemCounter[LastItem] > 1)
+                    {
+                        ItemCounter[LastItem]++;
+                        MyCart[LastItem] += _shop.Items[LastItem];
+                    }
+                    MyCart.Add(LastItem, _shop.Items[LastItem]);
+                    Console.WriteLine("done!");
+                    break;
+                default:
+                    Console.WriteLine("Cann't undo this action");
+                    break;
+
+
+            }
+            if (Choice == 1)
+            {
+                
+            }
+            else if (Choice == 3)
+            {
+            }
+            else
+            {
             }
         }
         public double Total()
@@ -55,7 +104,7 @@ namespace InhancedShoppingSystem
             double total = 0;
             foreach (var item in MyCart)
             {
-                total += Items[item];
+                total += item.Value;
             }
             return total;
         }
@@ -70,7 +119,7 @@ namespace InhancedShoppingSystem
             ViewCart();
             Console.WriteLine("-----------------------------------------------");
             Console.WriteLine($"Total: {Total()}$");
-            MyCart.Clear();   
+            MyCart.Clear();
         }
     }
 }
