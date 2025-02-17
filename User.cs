@@ -16,8 +16,7 @@ namespace InhancedShoppingSystem
             _shop = shop;
         }
         //public Dictionary<stringListdouble>=new Dictionary<string,double>();
-        public Dictionary<string,double> MyCart=new Dictionary<string,double>();
-        private Dictionary<string, int> ItemCounter =new Dictionary<string, int>(); 
+        public Dictionary<string,(int Quntity,double Price)> MyCart=new Dictionary<string,(int Quntity,double Price)>();
         public string LastItem { get; set; }
         public string UserName { get; set; }
         public int UserPhone { get; set; }
@@ -26,77 +25,70 @@ namespace InhancedShoppingSystem
         {
             if (MyCart.ContainsKey(Name))
             {
-                ItemCounter[Name]++;
-                MyCart[Name] += _shop.Items[Name];
+                MyCart[Name] = (MyCart[Name].Quntity + 1, MyCart[Name].Price + _shop.Items[Name]);
             }
             else
             {
-                MyCart.Add(Name, _shop.Items[Name]);
-                ItemCounter.Add(Name, 1);
+                MyCart.Add(Name, (1, _shop.Items[Name]));
             }
         }
         public void ViewCart()
         {
-            Console.WriteLine("product  quantity   Price\n");
+            Console.WriteLine("Product   Quantity   Price\n");
             foreach (var item in MyCart)
             {
-                Console.WriteLine($"{item.Key}     X {ItemCounter[item.Key]}  :  {item.Value}$");
+                Console.WriteLine($"{item.Key}     X {item.Value.Quntity}  :  {item.Value.Price}$");
             }
         }
+
         public void RemoveFromCart(string Name)
         {
-            if (ItemCounter[Name] > 1)
+            if (MyCart[Name].Quntity > 1)
             {
-                ItemCounter[Name]--;
-                MyCart[Name] -= _shop.Items[Name];
+                MyCart[Name] = (MyCart[Name].Quntity - 1, MyCart[Name].Price - _shop.Items[Name]);
             }
             else
             {
             MyCart.Remove(Name);
-            ItemCounter.Remove(Name);
             }
         }
         public void UndoLastAction(int Choice)
         {
+            if (MyCart.Count == 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("your cart is empty! ");
+                Console.ForegroundColor = ConsoleColor.White;
+                return;
+            }
             switch (Choice)
             {
                 case 1:
-                    if (ItemCounter[LastItem] > 1)
+                    if (MyCart[LastItem].Quntity > 1)
                     {
-                        ItemCounter[LastItem]--;
-                        MyCart[LastItem] -= _shop.Items[LastItem];
+                        MyCart[LastItem] = (MyCart[LastItem].Quntity - 1, MyCart[LastItem].Price - _shop.Items[LastItem]);
                     }
                     else
                     {
                         MyCart.Remove(LastItem);
-                        ItemCounter.Remove(LastItem);
                     }
-                    Console.WriteLine("done!");
+                    Console.WriteLine("undo Item Add !");
                     break;
                 case 3:
-                    if (ItemCounter[LastItem] > 1)
+                    if (MyCart[LastItem].Quntity >= 1)
                     {
-                        ItemCounter[LastItem]++;
-                        MyCart[LastItem] += _shop.Items[LastItem];
+                        MyCart[LastItem] = (MyCart[(LastItem)].Quntity + 1, MyCart[LastItem].Price + _shop.Items[LastItem]);
                     }
-                    MyCart.Add(LastItem, _shop.Items[LastItem]);
-                    Console.WriteLine("done!");
+                    else
+                    {
+
+                        MyCart.Add(LastItem, (1, _shop.Items[LastItem]));
+                    }
+                    Console.WriteLine("undo item remove !");
                     break;
                 default:
                     Console.WriteLine("Cann't undo this action");
                     break;
-
-
-            }
-            if (Choice == 1)
-            {
-                
-            }
-            else if (Choice == 3)
-            {
-            }
-            else
-            {
             }
         }
         public double Total()
@@ -104,7 +96,7 @@ namespace InhancedShoppingSystem
             double total = 0;
             foreach (var item in MyCart)
             {
-                total += item.Value;
+                total += item.Value.Price;
             }
             return total;
         }
